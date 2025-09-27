@@ -1,0 +1,71 @@
+<!DOCTYPE html> <!-- Declaramos el tipo de documento: HTML5 -->
+<html lang="es"> <!-- Todo el documento está en español -->
+
+<head> <!-- Cabecera: meta-información y enlaces a recursos -->
+  <meta charset="UTF-8"> <!-- Codificación para soportar acentos/ñ -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Escala correcta en móviles -->
+  <title>Inventario de Medicamentos</title> <!-- Título de la pestaña del navegador -->
+
+  <!-- Fuente Google: Roboto (limpia y profesional) -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Enlace a nuestra hoja de estilos global -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body> <!-- Cuerpo visible de la página -->
+
+  <!-- Encabezado superior con el nombre del sistema -->
+  <header class="site-header"> <!-- Bloque de encabezado con estilos -->
+    <div class="container"> <!-- Contenedor para centrar y limitar ancho -->
+      <h1 class="site-title">Inventario de Medicamentos</h1> <!-- Título grande -->
+      <p class="site-subtitle">Ingreso • Despacho • Historial</p> <!-- Subtítulo descriptivo -->
+    </div>
+  </header>
+
+  <!-- Área principal con las 3 tarjetas/botones -->
+  <main class="container"> <!-- Contenedor principal centrado -->
+    <section class="grid-menu"> <!-- Grid responsivo que aloja 3 opciones -->
+      
+      <!-- Tarjeta 1: Ingreso de medicamento -->
+      <a class="menu-card" href="ingreso.html"> <!-- Enlace que lleva a ingreso.html -->
+        <div class="menu-icon" aria-hidden="true">📥</div> <!-- Icono decorativo -->
+        <h2 class="menu-title">Ingreso de Medicamento</h2> <!-- Título de la tarjeta -->
+        <p class="menu-text">Registra nuevas existencias con presentación, dinamización y unidad.</p> <!-- Descripción corta -->
+        <span class="menu-cta">Ir al formulario</span> <!-- Llamado a la acción -->
+      </a>
+
+      <!-- Tarjeta 2: Despacho de medicamento -->
+      <a class="menu-card" href="despacho.html"> <!-- Enlace que lleva a despacho.html -->
+        <div class="menu-icon" aria-hidden="true">📤</div> <!-- Icono decorativo -->
+        <h2 class="menu-title">Despacho de Medicamento</h2> <!-- Título de la tarjeta -->
+        <p class="menu-text">Descuenta existencias y registra quién despacha.</p> <!-- Descripción corta -->
+        <span class="menu-cta">Ir al formulario</span> <!-- Llamado a la acción -->
+      </a>
+
+      <!-- Tarjeta 3: Historial de inventario -->
+      <a class="menu-card" href="historial.html"> <!-- Enlace que lleva a historial.html -->
+        <div class="menu-icon" aria-hidden="true">📑</div> <!-- Icono decorativo -->
+        <h2 class="menu-title">Historial de Inventario</h2> <!-- Título de la tarjeta -->
+        <p class="menu-text">Consulta, filtra y descarga los movimientos.</p> <!-- Descripción corta -->
+        <span class="menu-cta">Ver historial</span> <!-- Llamado a la acción -->
+      </a>
+
+    </section>
+  </main>
+
+  <!-- Pie de página simple -->
+  <footer class="site-footer"> <!-- Bloque inferior con créditos -->
+    <div class="container"> <!-- Contenedor centrado -->
+      <small>© <span id="year"></span> Inventario de Medicamentos — Construido para crecer</small> <!-- Año dinámico -->
+    </div>
+  </footer>
+
+  <!-- Script mínimo para actualizar el año del footer -->
+  <script>
+    // Obtenemos el elemento con id="year" y le ponemos el año actual.
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+
+</html>

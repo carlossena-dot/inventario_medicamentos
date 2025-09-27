@@ -184,7 +184,12 @@
         item.textContent = nombre;
         item.role = 'option';
         if (i === 0) item.classList.add('active');
-        item.addEventListener('click', () => selectMedicamento(nombre));
+        item.addEventListener('click', () => {
+  $inputMed.value = nombre;   // actualiza el input con el valor seleccionado
+  selectMedicamento(nombre);  // dispara la lógica de selección
+  $listaMeds.hidden = true;   // cierra la lista desplegable
+});
+
         $listaMeds.appendChild(item);
       });
       $listaMeds.hidden = false;
@@ -192,15 +197,35 @@
     }
 
     // 6) Selección de un medicamento desde la lista o al confirmar con Enter
-    function selectMedicamento(nombre) {
-      $inputMed.value = nombre;
-      $listaMeds.hidden = true;
-      $inputMed.setAttribute('aria-expanded','false');
-        // Intento de “detección local” de la unidad (para pruebas sin backend):
-        // Si en el flujo de ingreso guardamos unidad por nombre, la mostramos aquí.
-        const unidadGuardada = localStorage.getItem('unidad__' + nombre) || '';
-        setUnidadDetectada(unidadGuardada);
+    async function selectMedicamento(nombre) {
+  if (!nombre) return;
+
+  // 1) Revisar primero localStorage
+  let unidad = localStorage.getItem('unidad__' + nombre);
+
+  // 2) Si no está en localStorage, intentar cargar desde Google Sheets
+  if (!unidad) {
+    try {
+      const API_URL = "https://script.google.com/macros/s/AKfycbzKJ4rvUDixJWwsFbHMG4pt0YjgZ7X8fzgL4HCjFDft7UDNRek7DsOO3FYWhkavIVNt/exec";
+      const resp = await fetch(API_URL);
+      const rows = await resp.json();
+
+      // Buscar última fila del medicamento (con presentación + dinamización si deseas ser más exacto)
+      for (let i = rows.length - 1; i >= 0; i--) {
+        if (String(rows[i]["Medicamento"]).trim().toLowerCase() === nombre.trim().toLowerCase()) {
+          unidad = rows[i]["Unidad"];
+          break;
+        }
+      }
+    } catch (err) {
+      console.error("Error consultando unidad en Sheets:", err);
     }
+  }
+
+  // 3) Mostrar en badge y guardar en campo oculto
+  setUnidadDetectada(unidad || "");
+}
+
 
     // 7) Muestra visualmente la unidad detectada y la copia al hidden
     function setUnidadDetectada(u) {

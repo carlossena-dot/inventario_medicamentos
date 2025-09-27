@@ -1,4 +1,3 @@
-
 <!DOCTYPE html> <!-- Documento HTML5 -->
 <html lang="es"> <!-- Idioma -->
 <head>
@@ -162,6 +161,7 @@
               <th>Presentación</th>
               <th>Acción</th>
               <th>Cantidad</th>
+              <th>Unidad</th>
               <th>Restante</th>
               <th>Dinamización</th>
               <th>Tipo de Dinamización</th>
@@ -279,6 +279,11 @@
         const tdCant = document.createElement('td');
         tdCant.textContent = r.cantidad;
         tr.appendChild(tdCant);
+
+        // Unidad
+        const tdUnidad = document.createElement('td');
+        tdUnidad.textContent = r.unidad;
+        tr.appendChild(tdUnidad);
 
         // Restante
         const tdRest = document.createElement('td');
@@ -452,6 +457,7 @@
         presentacion: r["Presentación"]   ?? "",
         accion      : r["Acción"]         ?? "",
         cantidad    : r["Cantidad"]       ?? 0,
+        unidad      : r["Unidad"]         ?? "",
         restante    : r["Restante"]       ?? 0,
         dinamizacion: r["Dinamización"]   ?? "",
         tipo        : r["Tipo"]           ?? "",

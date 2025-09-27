@@ -1,1 +1,478 @@
 
+<!DOCTYPE html> <!-- Documento HTML5 -->
+<html lang="es"> <!-- Idioma -->
+<head>
+  <meta charset="UTF-8"> <!-- Soporte de caracteres latinos -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive -->
+  <title>Historial de Inventario</title> <!-- Título de la pestaña -->
+
+  <!-- Fuente y estilos globales del proyecto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Estilos específicos del historial (tabla + barra de filtros) -->
+  <style>
+    /* Caja principal con aspecto de tarjeta */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-1);
+      padding: 20px;
+      margin: 28px 0 56px;
+    }
+
+    /* Barra de filtros: grid responsivo */
+    .filters {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr; /* Distribución en desktop */
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 980px) {
+      .filters { grid-template-columns: 1fr 1fr; } /* En móvil, 2 columnas */
+    }
+
+    .form-control { /* Reutilizamos la clase global y afinamos altura */
+      height: 42px;
+    }
+
+    /* Botonera derecha (descargar / ver en Sheets / limpiar) */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin: 8px 0 16px;
+    }
+    .btn {
+      height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--gray-200);
+      background: #eef3f8; color: var(--blue-900); font-weight: 600; cursor: pointer;
+    }
+    .btn-primary { background: var(--blue-500); color: #fff; border: none; }
+    .btn:hover { filter: brightness(1.02); }
+
+    /* Contenedor con scroll horizontal para tablas anchas */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;               /* Permite desplazarse horizontalmente si se desborda */
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+    }
+
+    /* Tabla base */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;               /* Garantiza ancho mínimo legible */
+      background: #fff;
+    }
+
+    /* Encabezado fijo visualmente (sticky) al hacer scroll vertical dentro del wrapper */
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #f0f5fb;
+      color: var(--blue-900);
+      font-weight: 700;
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid var(--gray-200);
+      z-index: 1;
+    }
+
+    /* Filas del cuerpo */
+    tbody td {
+      padding: 12px;
+      border-bottom: 1px solid var(--gray-200);
+      color: #243b53;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    /* Rayado sutil de filas */
+    tbody tr:nth-child(even) {
+      background: #fbfdff;
+    }
+
+    /* Etiquetas pequeñas para Acción */
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: 1px solid var(--gray-200);
+      background: #eef3f8;
+    }
+    .tag.ingreso  { background: #e8f6ee; border-color: #caeeda; }
+    .tag.despacho { background: #fff1f1; border-color: #ffd9d9; }
+  </style>
+</head>
+
+<body>
+  <!-- Encabezado consistente -->
+  <header class="site-header">
+    <div class="container">
+      <h1 class="site-title">Historial de Movimientos</h1>
+      <p class="site-subtitle">Consulta, filtra y descarga tus registros</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <!-- Título y línea divisoria -->
+      <h2 style="font-size:20px;">Filtros</h2>
+      <hr class="divider" style="height:1px; background:var(--gray-200); border:0; margin:12px 0 16px;">
+
+      <!-- Barra de filtros: nombre, fecha, presentación, acción, tipo de dinamización -->
+      <div class="filters">
+        <!-- 1) Nombre -->
+        <input id="fNombre" class="form-control" type="text" placeholder="Filtrar por nombre...">
+        <!-- 2) Fecha (desde) -->
+        <input id="fDesde" class="form-control" type="date" title="Desde">
+        <!-- 3) Fecha (hasta) -->
+        <input id="fHasta" class="form-control" type="date" title="Hasta">
+        <!-- 4) Presentación -->
+        <select id="fPresentacion" class="form-control">
+          <option value="">Presentación (todas)</option>
+          <option value="globulos">Glóbulos</option>
+          <option value="gotas">Gotas</option>
+        </select>
+        <!-- 5) Tipo de dinamización -->
+        <input id="fTipo" class="form-control" type="text" placeholder="Tipo dinamización (ej: CH)">
+      </div>
+
+      <!-- Herramientas (descarga, ver en Sheets, limpiar) -->
+      <div class="toolbar">
+        <button id="btnLimpiar" class="btn btn-primary" type="button">Limpiar filtros</button>
+        <a id="btnSheets" class="btn btn-primary" href="#" target="_blank" rel="noopener">
+        Ver en Google Sheets
+        </a>
+
+        <button id="btnDescargar" class="btn btn-primary" type="button">Descargar historial (CSV)</button>
+      </div>
+
+      <!-- Tabla dentro de un contenedor con scroll horizontal -->
+      <div class="table-wrapper">
+        <table aria-describedby="Tabla historial de movimientos">
+          <thead>
+            <tr>
+              <th>Medicamento</th>
+              <th>Fecha</th>
+              <th>Presentación</th>
+              <th>Acción</th>
+              <th>Cantidad</th>
+              <th>Restante</th>
+              <th>Dinamización</th>
+              <th>Tipo de Dinamización</th>
+              <th>Usuario</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyHistorial">
+            <!-- Las filas se renderizan dinámicamente con JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Pie de página -->
+  <footer class="site-footer">
+    <div class="container">
+      <small>© <span id="year"></span> Inventario de Medicamentos</small>
+    </div>
+  </footer>
+
+  <!-- ===== LÓGICA DEL HISTORIAL (front) ===== -->
+  <script>
+    /* ===========================
+       1) Utilidades y referencias
+       =========================== */
+    document.getElementById('year').textContent = new Date().getFullYear(); // año dinámico
+
+    // Referencias a los filtros
+    const $fNombre       = document.getElementById('fNombre');       // texto nombre
+    const $fDesde        = document.getElementById('fDesde');        // fecha desde
+    const $fHasta        = document.getElementById('fHasta');        // fecha hasta
+    const $fPresentacion = document.getElementById('fPresentacion'); // select presentación
+    const $fTipo         = document.getElementById('fTipo');         // texto tipo dinamización
+
+    // Botones
+    const $btnLimpiar    = document.getElementById('btnLimpiar');
+    const $btnDescargar  = document.getElementById('btnDescargar');
+    const $btnSheets     = document.getElementById('btnSheets');
+
+    // Cuerpo de la tabla
+    const $tbody         = document.getElementById('tbodyHistorial');
+
+    // Normaliza textos (minúsculas sin tildes) para comparar
+    const normalize = (s) => (s || '')
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'');
+
+    /* ===========================
+       2) Datos de ejemplo (DEMO)
+       =========================== 
+       - Este arreglo simula lo que vendrá del backend.
+       - Más adelante, al conectar con Apps Script, reemplazaremos esto
+         por un fetch a tu endpoint y pintaremos los datos reales. 
+    const HISTORIAL = [
+      // Cada objeto representa un movimiento
+      { medicamento:'Ambrosia Artemisić folia', fecha:'2025-09-27T01:14:21.000Z', presentacion:'globulos', accion:'Ingreso', cantidad:90, restante:90, dinamizacion:100, tipo:'CH', usuario:'-' },
+      { medicamento:'Acetic Acid.',              fecha:'2025-09-27T01:52:22.000Z', presentacion:'globulos', accion:'Ingreso', cantidad:75, restante:75, dinamizacion:45,  tipo:'CH', usuario:'-' },
+      { medicamento:'Acetic Acid.',              fecha:'2025-09-27T01:53:32.000Z', presentacion:'globulos', accion:'Despacho',cantidad:15, restante:60, dinamizacion:45,  tipo:'CH', usuario:'Alan' },
+      { medicamento:'Alcohol',                   fecha:'2025-09-27T02:30:29.000Z', presentacion:'globulos', accion:'Ingreso', cantidad:75, restante:75, dinamizacion:50,  tipo:'CH', usuario:'-' },
+      { medicamento:'Alcohol',                   fecha:'2025-09-27T02:31:02.000Z', presentacion:'globulos', accion:'Despacho',cantidad:20, restante:55, dinamizacion:50,  tipo:'CH', usuario:'mac' }
+    ];
+*/
+    /* ===========================
+       3) Renderizar tabla
+       =========================== */
+    function renderTable(rows) {
+      // Limpiamos el cuerpo de la tabla
+      $tbody.innerHTML = '';
+
+      // Si no hay filas, mostramos un estado vacío
+      if (!rows || rows.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 9;
+        td.textContent = 'No hay movimientos para los filtros seleccionados.';
+        td.style.color = '#6b7785';
+        td.style.padding = '16px';
+        tr.appendChild(td);
+        $tbody.appendChild(tr);
+        return;
+      }
+
+      // Por cada fila creamos un <tr> con sus <td>
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+
+        // Medicamento
+        const tdMed = document.createElement('td');
+        tdMed.textContent = r.medicamento;
+        tr.appendChild(tdMed);
+
+        // Fecha (mostramos ISO corto legible local)
+        const tdFecha = document.createElement('td');
+        const d = new Date(r.fecha);
+        tdFecha.textContent = isNaN(d.getTime()) ? r.fecha : d.toLocaleString();
+        tr.appendChild(tdFecha);
+
+        // Presentación
+        const tdPres = document.createElement('td');
+        tdPres.textContent = r.presentacion;
+        tr.appendChild(tdPres);
+
+        // Acción (con tag)
+        const tdAcc = document.createElement('td');
+        const span = document.createElement('span');
+        span.className = 'tag ' + (normalize(r.accion) === 'ingreso' ? 'ingreso' : 'despacho');
+        span.textContent = r.accion;
+        tdAcc.appendChild(span);
+        tr.appendChild(tdAcc);
+
+        // Cantidad
+        const tdCant = document.createElement('td');
+        tdCant.textContent = r.cantidad;
+        tr.appendChild(tdCant);
+
+        // Restante
+        const tdRest = document.createElement('td');
+        tdRest.textContent = r.restante;
+        tr.appendChild(tdRest);
+
+        // Dinamización (nivel)
+        const tdDin = document.createElement('td');
+        tdDin.textContent = r.dinamizacion;
+        tr.appendChild(tdDin);
+
+        // Tipo de dinamización (CH, etc.)
+        const tdTipo = document.createElement('td');
+        tdTipo.textContent = r.tipo;
+        tr.appendChild(tdTipo);
+
+        // Usuario
+        const tdUser = document.createElement('td');
+        tdUser.textContent = r.usuario;
+        tr.appendChild(tdUser);
+
+        $tbody.appendChild(tr);
+      });
+    }
+
+    /* ===========================
+       4) Lógica de filtros
+       =========================== */
+    function applyFilters() {
+      // Leemos valores actuales de los filtros
+      const nombre    = normalize($fNombre.value);
+      const desdeStr  = $fDesde.value ? new Date($fDesde.value + 'T00:00:00') : null; // inicio del día
+      const hastaStr  = $fHasta.value ? new Date($fHasta.value + 'T23:59:59') : null; // fin del día
+      const present   = normalize($fPresentacion.value);
+      const tipo      = normalize($fTipo.value);
+
+      // Filtramos sobre la fuente de datos (HISTORIAL)
+      const filtrados = HISTORIAL.filter(r => {
+        // 1) Nombre contiene
+        if (nombre && !normalize(r.medicamento).includes(nombre)) return false;
+
+        // 2) Rango de fechas
+        if (desdeStr || hastaStr) {
+          const f = new Date(r.fecha);
+          if (desdeStr && f < desdeStr) return false;
+          if (hastaStr && f > hastaStr) return false;
+        }
+
+        // 3) Presentación exacta (si se eligió)
+        if (present && normalize(r.presentacion) !== present) return false;
+
+        // 4) Tipo de dinamización contiene (permite CH, LM, etc.)
+        if (tipo && !normalize(r.tipo).includes(tipo)) return false;
+
+        return true; // pasa todos los criterios
+      });
+
+      // Renderizamos con el resultado
+      renderTable(filtrados);
+    }
+
+    // Escuchar cambios en todos los filtros para aplicar en tiempo real
+    [$fNombre, $fDesde, $fHasta, $fPresentacion, $fTipo].forEach($el => {
+      $el.addEventListener('input', applyFilters);
+      $el.addEventListener('change', applyFilters);
+    });
+
+    // Botón: limpiar filtros
+    $btnLimpiar.addEventListener('click', () => {
+      $fNombre.value = '';
+      $fDesde.value = '';
+      $fHasta.value = '';
+      $fPresentacion.value = '';
+      $fTipo.value = '';
+      applyFilters();
+    });
+
+    /* ===========================
+       5) Descargar CSV (cliente)
+       =========================== */
+    function toCSV(rows) {
+      // Cabeceras
+      const headers = ['Medicamento','Fecha','Presentación','Acción','Cantidad','Restante','Dinamización','Tipo','Usuario'];
+      const lines = [headers.join(',')];
+
+      // Filas
+      rows.forEach(r => {
+        const fecha = new Date(r.fecha);
+        const fechaOut = isNaN(fecha.getTime()) ? r.fecha : fecha.toISOString();
+        const vals = [
+          r.medicamento, fechaOut, r.presentacion, r.accion,
+          r.cantidad, r.restante, r.dinamizacion, r.tipo, r.usuario
+        ].map(v => {
+          // Escapamos comas y comillas
+          const s = String(v ?? '');
+          return '"' + s.replace(/"/g,'""') + '"';
+        });
+        lines.push(vals.join(','));
+      });
+
+      return lines.join('\n');
+    }
+
+    $btnDescargar.addEventListener('click', () => {
+      // Tomamos lo que está actualmente filtrado para descargarlo
+      const nombre    = normalize($fNombre.value);
+      const desdeStr  = $fDesde.value ? new Date($fDesde.value + 'T00:00:00') : null;
+      const hastaStr  = $fHasta.value ? new Date($fHasta.value + 'T23:59:59') : null;
+      const present   = normalize($fPresentacion.value);
+      const tipo      = normalize($fTipo.value);
+
+      const rows = HISTORIAL.filter(r => {
+        if (nombre && !normalize(r.medicamento).includes(nombre)) return false;
+        if (desdeStr || hastaStr) {
+          const f = new Date(r.fecha);
+          if (desdeStr && f < desdeStr) return false;
+          if (hastaStr && f > hastaStr) return false;
+        }
+        if (present && normalize(r.presentacion) !== present) return false;
+        if (tipo && !normalize(r.tipo).includes(tipo)) return false;
+        return true;
+      });
+
+      // Generamos el CSV y disparamos descarga
+      const csv = toCSV(rows);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'historial_inventario.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    /* ===========================
+       6) Ver en Google Sheets
+       ===========================
+       - Por ahora es un placeholder. Cuando creemos la hoja,
+         reemplazaremos '#' por el enlace público de lectura. */
+    $btnSheets.addEventListener('click', (e) => {
+      if ($btnSheets.getAttribute('href') === '#') {
+        e.preventDefault();
+        alert('En el Paso de backend este botón abrirá tu Google Sheet con el historial.');
+      }
+    });
+
+    /* ===========================
+      7) Inicialización con datos REALES desde Apps Script
+     =========================== */
+
+  // 7.1) Fuente de datos (se llenará al cargar)
+  let HISTORIAL = [];
+
+  // 7.2) URL del Apps Script (tu /exec)
+  const API_URL = "https://script.google.com/macros/s/AKfycbx1tXfTyvQecBTz95M0Fy7qzKqp50YIv1npKQJibVi8H4bLpTNYc0Y9nfs2gWgsWqzP/exec";
+
+  // 7.3) Cargar historial desde el backend
+  async function cargarHistorial() {
+    try {
+      const resp = await fetch(API_URL, { method: "GET" });
+      const rows = await resp.json(); // ← Esto viene con las keys tal como están en la cabecera del Sheet
+
+      // 7.4) Adaptamos las claves a las que usa renderTable()
+      //     En tu Apps Script, las cabeceras de la hoja son:
+      //     Medicamento | Fecha | Presentación | Acción | Cantidad | Restante | Dinamización | Tipo | Usuario
+      HISTORIAL = rows.map(r => ({
+        medicamento : r["Medicamento"]    ?? "",
+        fecha       : r["Fecha"]          ?? "",
+        presentacion: r["Presentación"]   ?? "",
+        accion      : r["Acción"]         ?? "",
+        cantidad    : r["Cantidad"]       ?? 0,
+        restante    : r["Restante"]       ?? 0,
+        dinamizacion: r["Dinamización"]   ?? "",
+        tipo        : r["Tipo"]           ?? "",
+        usuario     : r["Usuario"]        ?? ""
+      }));
+
+      // 7.5) Pintamos la tabla completa y activamos filtros
+      renderTable(HISTORIAL);
+      applyFilters(); // aplica filtros con lo que haya escrito el usuario (si algo)
+    } catch (err) {
+      renderTable([]);
+      alert("No se pudo cargar el historial: " + err.message);
+    }
+  }
+
+  // 7.6) Asignar enlace del botón "Ver en Google Sheets" si quieres que apunte a la hoja
+  // De momento lo dejamos como está; si me pasas el enlace de la hoja, lo coloco aquí:
+  // document.getElementById('btnSheets').href = 'URL_DE_TU_SHEET';
+
+  // 7.7) Cargamos al abrir la página
+  cargarHistorial();
+  </script>
+</body>
+</html>

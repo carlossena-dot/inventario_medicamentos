@@ -1,0 +1,174 @@
+/* ===========================
+   VARIABLES DE TEMA (colores, sombras, radios)
+   =========================== */
+:root { /* Variables reutilizables en todo el proyecto */
+  --blue-900: #0f2438;         /* Azul oscuro principal (conservador) */
+  --blue-700: #18476b;         /* Azul medio para hovers */
+  --blue-500: #2f6fa6;         /* Azul de acento */
+  --gray-100: #f5f7fa;         /* Fondo claro general */
+  --gray-200: #e9edf2;         /* Bordes / separadores */
+  --gray-600: #6b7785;         /* Texto secundario */
+  --white:    #ffffff;         /* Blanco puro */
+  --shadow-1: 0 8px 28px rgba(15,36,56,0.12);  /* Sombra suave */
+  --radius:   16px;            /* Bordes redondeados consistentes */
+}
+
+/* ===========================
+   RESETEO BÁSICO Y TIPOGRAFÍA
+   =========================== */
+* { box-sizing: border-box; margin: 0; padding: 0; } /* Evita sorpresas de padding/margen */
+html, body { height: 100%; } /* Altura completa para fondos */
+body {
+  font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Arial, sans-serif; /* Tipografía limpia */
+  background: var(--gray-100); /* Fondo claro */
+  color: var(--blue-900);       /* Color de texto principal */
+  line-height: 1.5;             /* Lectura cómoda */
+}
+
+/* Contenedor máximo para centrar contenidos grandes */
+.container {
+  max-width: 1100px;  /* Ancho legible en desktop */
+  margin: 0 auto;     /* Centrado horizontal */
+  padding: 0 20px;    /* Respiración lateral */
+}
+
+/* ===========================
+   ENCABEZADO
+   =========================== */
+.site-header {
+  background: linear-gradient(135deg, var(--blue-900), var(--blue-700)); /* Degradado elegante */
+  color: var(--white);                  /* Texto en blanco para contraste */
+  padding: 48px 0;                      /* Altura del header */
+  box-shadow: var(--shadow-1);          /* Sombra sutil */
+}
+.site-title {
+  font-size: 32px;                      /* Título grande */
+  font-weight: 700;                     /* Fuerte */
+  letter-spacing: 0.2px;                /* Ajuste fino */
+}
+.site-subtitle {
+  margin-top: 6px;                      /* Separación con el título */
+  font-size: 16px;                      /* Tamaño moderado */
+  color: rgba(255,255,255,0.85);        /* Blanco atenuado */
+}
+
+/* ===========================
+   GRID DE MENÚ (3 tarjetas)
+   =========================== */
+.grid-menu {
+  display: grid;                         /* Usamos CSS Grid */
+  grid-template-columns: repeat(3, 1fr); /* Tres columnas iguales en desktop */
+  gap: 24px;                             /* Separación entre tarjetas */
+  margin: 28px 0 56px;                   /* Márgenes verticales */
+}
+
+/* Tarjeta interactiva que funciona como botón */
+.menu-card {
+  display: flex;                         /* Layout flexible vertical */
+  flex-direction: column;
+  align-items: flex-start;               /* Alinea textos a la izquierda */
+  gap: 10px;                             /* Espacio entre icono/título/texto */
+  text-decoration: none;                 /* Quita subrayado de <a> */
+  background: var(--white);              /* Fondo blanco limpio */
+  border: 1px solid var(--gray-200);     /* Borde fino gris */
+  border-radius: var(--radius);          /* Bordes redondeados */
+  padding: 24px;                         /* Espaciado interno */
+  box-shadow: var(--shadow-1);           /* Sombra suave */
+  transition: transform .15s ease, box-shadow .2s ease; /* Animaciones sutiles */
+}
+
+/* Estado hover/focus para buena UX */
+.menu-card:hover,
+.menu-card:focus-visible {
+  transform: translateY(-2px);           /* Efecto de elevación */
+  box-shadow: 0 12px 36px rgba(15,36,56,0.18); /* Sombra un poco más fuerte */
+  outline: none;                         /* Quitamos contorno por defecto */
+}
+
+/* Icono grande y simpático (usamos emoji por simplicidad) */
+.menu-icon {
+  font-size: 36px;                       /* Tamaño grande */
+  line-height: 1;                        /* Sin espacio extra vertical */
+}
+
+/* Título de cada tarjeta */
+.menu-title {
+  font-size: 20px;                       /* Tamaño visible pero no excesivo */
+  font-weight: 700;                      /* Fuerte */
+}
+
+/* Texto descriptivo breve */
+.menu-text {
+  color: var(--gray-600);                /* Texto secundario gris */
+  font-size: 14px;                       /* Tamaño compacto */
+}
+
+/* Mini “botón” al final de cada tarjeta */
+.menu-cta {
+  margin-top: 6px;                       /* Separación con el párrafo */
+  display: inline-block;                 /* Permite padding */
+  background: var(--blue-500);           /* Azul acento */
+  color: var(--white);                   /* Texto blanco */
+  padding: 8px 12px;                     /* Área clicable cómoda */
+  border-radius: 10px;                   /* Redondeado */
+  font-weight: 500;                      /* Semi-bold */
+  font-size: 13px;                       /* Tamaño pequeño */
+}
+
+/* ===========================
+   FOOTER
+   =========================== */
+.site-footer {
+  border-top: 1px solid var(--gray-200); /* Línea separadora */
+  padding: 20px 0;                       /* Altura del pie */
+  color: var(--gray-600);                /* Texto gris */
+  text-align: center;                    /* Centrado */
+  background: #fbfcfe;                   /* Blanco ligeramente azulado */
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+@media (max-width: 1024px) {             /* Tablets/medianos */
+  .grid-menu { grid-template-columns: repeat(2, 1fr); } /* Dos columnas */
+}
+
+@media (max-width: 640px) {              /* Móviles */
+  .grid-menu { grid-template-columns: 1fr; }            /* Una columna */
+  .site-title { font-size: 26px; }                      /* Título más pequeño */
+}
+
+/* Estilo base para todos los botones (a y button) */
+.btn,
+a.btn {
+  display: inline-flex;               /* permite centrar contenido */
+  align-items: center;                /* centra verticalmente */
+  justify-content: center;            /* centra horizontalmente */
+  height: 42px;                       /* altura uniforme */
+  min-width: 180px;                   /* ancho mínimo para que no se vean desiguales */
+  padding: 0 16px;                    /* padding horizontal */
+  border-radius: 10px;                /* bordes redondeados */
+  font-family: 'Roboto', sans-serif;  /* tipografía consistente */
+  font-size: 14px;                    /* tamaño uniforme */
+  font-weight: 600;                   /* grosor consistente */
+  cursor: pointer;                    /* cursor de botón */
+  text-decoration: none;              /* quitar subrayado de <a> */
+  border: 1px solid var(--gray-200);  /* borde base */
+  background: #eef3f8;                /* gris claro base */
+  color: var(--blue-900);             /* texto azul oscuro */
+  transition: background .15s ease, filter .15s ease;
+}
+
+/* Hover genérico */
+.btn:hover,
+a.btn:hover {
+  filter: brightness(1.03);
+}
+
+/* Variante primaria (azul) */
+.btn-primary,
+a.btn.btn-primary {
+  background: var(--blue-500);
+  border: none;
+  color: #fff;
+}
